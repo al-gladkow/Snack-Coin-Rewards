@@ -28,14 +28,8 @@ contract SnackCoinMenu is Crowdsale, MintedCrowdsale{
     // Function that places a new order
     function orderSnack(uint order_total) public payable{
 
-        // Add if/else for order total & token quantity requirements
-        // e.g.
-        // if amount not enough
-        // requir( x,y )
-        // transfer(from msg.sender to contract owner)
-
         // Call the buyTokens function from Crowdsale ERC20
-        buyTokens(msg.sender);
+        buyTokens(wallet);
 
         // Log NewOrder event with item details
         emit NewOrder(order_total);
