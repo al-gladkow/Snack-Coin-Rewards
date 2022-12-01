@@ -10,6 +10,8 @@ import sqlite3
 from web3 import Web3
 import streamlit as st
 
+from notify import create_message, send_email
+
 # Load .env
 load_dotenv()
 
@@ -233,24 +235,61 @@ if st.button("Place Order"):
         'value': order_total_wei
     })
     receipt = w3.eth.waitForTransactionReceipt(txn_hash)
-    st.write("Receipt is ready. Here it is: ")
-    st.write(dict(receipt))
     
-    # Get most recent order total 
-    query = "SELECT id, customer_id, order_total FROM Orders ORDER BY id DESC LIMIT 1 OFFSET 0"
-    res = cur.execute(query).fetchall()
-    for row in res:
-        id, customer_id, order_total = row
+    if receipt is not None:
     
-    # Add rewards earned to rewards database    
-    order_tokens = order_total * 1000
-    query = "INSERT INTO Rewards (customer_id, order_id, snak_tokens) VALUES(?,?,?)"
-    params = (customer_id, id, order_tokens)
-    cur.execute(query, params)
-    con.commit()
+        st.write("Receipt is ready. Here it is: ")
+        st.write(dict(receipt))
 
-    # Show rewards earned
-    st.write(f"You earned: {order_tokens} SNAK, eat more and earn more!")
+        # Get most recent order total 
+        query = "SELECT id, customer_id, order_total, time FROM Orders ORDER BY id DESC LIMIT 1 OFFSET 0"
+        res = cur.execute(query).fetchall()
+        for row in res:
+            order_id, customer_id, order_total, time = row
+
+        # Get customer info
+        query = "SELECT wallet, first_name, last_name, email FROM Customers WHERE id = ?"
+        params = (customer_id,)
+        res = cur.execute(query, params).fetchall()
+        for row in res:
+            wallet, first_name, last_name, email = row
+
+        customer_info = {
+            'wallet': wallet,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email
+        }
+
+        food = dict()
+
+        # Get order items
+        query = "SELECT food_id, quantity FROM OrderItems WHERE id = ?"
+        params = (order_id,)
+        res = cur.execute(query, params).fetchall()
+        for row in res:
+            food_id, quantity = row
+            food[food_id] = [quantity]
+            
+        # Get food info from Food table
+        query = "SELECT id, name FROM Food WHERE id IN (SELECT food_id from MenuItems WHERE menu_id = 1)"
+        res = cur.execute(query).fetchall()
+        for row in res:
+            id_, name_ = row
+            food[id_].append(name_)
+    
+        msg = create_message(customer_info, food, order_id, order_total)
+        send_email(msg)
+
+        # Add rewards earned to rewards database    
+        order_tokens = order_total * 1000
+        query = "INSERT INTO Rewards (customer_id, order_id, snak_tokens) VALUES(?,?,?)"
+        params = (customer_id, id, order_tokens)
+        cur.execute(query, params)
+        con.commit()
+
+        # Show rewards earned
+        st.write(f"You earned: {order_tokens} SNAK, eat more and earn more!")
 
 st.sidebar.write("Please add yourself as a customer before placing an order!")
 

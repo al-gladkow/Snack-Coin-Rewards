@@ -4,15 +4,29 @@ from email.message import EmailMessage
 from email.headerregistry import Address
 from email.utils import make_msgid
 
-def create_message():
+def create_message(customer_info, food_, order_id, order_total):
+
+    wallet = customer_info['wallet']
+    first_name = customer_info['first_name']
+    last_name = customer_info['last_name']
+    name = f"{first_name} {last_name}"
+    email = customer_info['email']
 
     # Create the base text message.
     msg = EmailMessage()
     msg['Subject'] = "SnackCoin Rewards Test Order"
     msg['From'] = Address("SnackCoin Rewards", "snackcoin", "test.com")
-    msg['To'] = Address("Test User", "user", "example.com")
-    msg.set_content("""\
-    Hello!
+    msg['To'] = Address(
+        f"{first_name} {last_name}",
+        first_name,
+        email
+    )
+    msg.set_content(f"""\
+    Hello {name}!
+
+    You placed an order: #{order_id}
+    
+    The total was {order_total}
 
     This is a test email
     """)
