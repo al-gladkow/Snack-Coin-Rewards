@@ -29,12 +29,12 @@ def load_contract(which_contract):
     # Choose which hard-coded contract to load
     # contract_address = os.getenv("SMART_CONTRACT_DEPLOYED_ADDRESS")
     if which_contract == 'menu':
-        contract_address = '0x0c107a0AE2687d52ceCb8f8c7ff76f0AE9A93a8c'
+        contract_address = '0xC0d2E86F826D7F08e82359bE2F0F70f3ec3308A5'
         with open(Path("./Solidity/abi-menu.json")) as abi_:
             abi = json.load(abi_)
     
     elif which_contract == 'token':
-        contract_address = '0xf09BbA6A2Da28dE0DfDB66df3E655E9592fBD100'
+        contract_address = '0x04AEfdB53d9a750C48bc2538743bee08CEaa15f7'
         with open(Path("./Solidity/abi-token.json")) as abi_:
             abi = json.load(abi_)
 
@@ -230,7 +230,7 @@ if st.button("Place Order"):
     st.write(f"Paying {order_total} ETH from wallet: {wallet}")
 
     # Submit transaction to contract
-    txn_hash = contract.functions.orderSnack(order_total_wei, token_amount).transact({
+    txn_hash = contract.functions.orderSnack().transact({
         'from': wallet,
         'value': order_total_wei
     })
@@ -264,32 +264,36 @@ if st.button("Place Order"):
         food = dict()
 
         # Get order items
-        query = "SELECT food_id, quantity FROM OrderItems WHERE id = ?"
+        query = "SELECT food_id, quantity FROM OrderItems WHERE order_id = ?"
         params = (order_id,)
         res = cur.execute(query, params).fetchall()
         for row in res:
             food_id, quantity = row
-            food[food_id] = [quantity]
+            if food_id in food.keys():
+                food[food_id][0] += quantity
+            else:
+                food[food_id] = [quantity]
             
         # Get food info from Food table
         query = "SELECT id, name FROM Food WHERE id IN (SELECT food_id from MenuItems WHERE menu_id = 1)"
         res = cur.execute(query).fetchall()
         for row in res:
-            id_, name_ = row
-            food[id_].append(name_)
-    
-        msg = create_message(customer_info, food, order_id, order_total)
-        send_email(msg)
+            food_id, name_ = row
+            if food_id in food.keys():
+                food[food_id].append(name_)
 
         # Add rewards earned to rewards database    
         order_tokens = order_total * 1000
         query = "INSERT INTO Rewards (customer_id, order_id, snak_tokens) VALUES(?,?,?)"
-        params = (customer_id, id, order_tokens)
+        params = (customer_id, order_id, order_tokens)
         cur.execute(query, params)
         con.commit()
 
         # Show rewards earned
-        st.write(f"You earned: {order_tokens} SNAK, eat more and earn more!")
+        st.write(f"You earned: {round(order_tokens, 1)} SNAK, eat more and earn more!")
+        
+        msg = create_message(customer_info, food, order_id, order_total, order_tokens)
+        send_email(msg)
 
 st.sidebar.write("Please add yourself as a customer before placing an order!")
 
