@@ -8,6 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import sqlite3
 from web3 import Web3
+from web3.exceptions import ContractLogicError
 import streamlit as st
 
 from notify import create_message, send_email
@@ -29,12 +30,12 @@ def load_contract(which_contract):
     # Choose which hard-coded contract to load
     # contract_address = os.getenv("SMART_CONTRACT_DEPLOYED_ADDRESS")
     if which_contract == 'menu':
-        contract_address = '0xC0d2E86F826D7F08e82359bE2F0F70f3ec3308A5'
+        contract_address = '0x48f012FA0cE5a4DaD0985f148f1298370BAAa10b'
         with open(Path("./Solidity/abi-menu.json")) as abi_:
             abi = json.load(abi_)
     
     elif which_contract == 'token':
-        contract_address = '0x04AEfdB53d9a750C48bc2538743bee08CEaa15f7'
+        contract_address = '0xD0a58431c0eA1483130E4F6e147c233Dea718667'
         with open(Path("./Solidity/abi-token.json")) as abi_:
             abi = json.load(abi_)
 
@@ -58,7 +59,8 @@ st.text("\n")
 # Choose customer wallet
 st.sidebar.markdown("## Please Enter Customer Info:")
 
-wallet = st.sidebar.selectbox(label='Ethereum Wallet: ', options=accounts)
+# Don't allow the first address (contract owner) to be selected
+wallet = st.sidebar.selectbox(label='Ethereum Wallet: ', options=accounts[1:])
 
 # Ask for customer info
 customer_first = st.sidebar.text_input('First Name: ', key=1)
@@ -67,9 +69,6 @@ customer_phone = st.sidebar.text_input('Phone: ', key=3)
 customer_email = st.sidebar.text_input('Email: ', key=4)
 
 if st.sidebar.button('Add Customer'):
-    # Optional instructor lines:
-    # query = f"INSERT INTO Customers VALUES (1, {wallet}, {customer_first}, {customer_last}, {int(customer_phone)}, {str(customer_email)})"
-    # query = f"INSERT INTO Customers VALUES (1, :wallet, :customer_first, :customer_last, :customer_phone, {str(customer_email)})"
 
     # Insert data into database
     query = "INSERT INTO Customers ('wallet', 'first_name', 'last_name', 'phone', 'email') VALUES(?,?,?,?,?)"
@@ -302,19 +301,6 @@ if st.sidebar.button("Check SNAK Balance"):
     # Load SNAK Token Address
     contract = load_contract('token')
     
-    # Get most recent order info
-    query = "SELECT id, customer_id, order_total FROM Orders ORDER BY id DESC LIMIT 1 OFFSET 0"
-    res = cur.execute(query).fetchall()
-    for row in res:
-        order_id, customer_id, order_total = row
-
-    # Get customer wallet
-    query = "SELECT wallet FROM Customers WHERE id = ?"
-    params = (customer_id,)
-    res = cur.execute(query, params).fetchall()
-    for row in res:
-        wallet = str(row).strip("(,')")
-    
     # Show customer token balance    
     token_balance = contract.functions.balanceOf(wallet).call()
     token_balance /= 10**18
@@ -323,4 +309,51 @@ if st.sidebar.button("Check SNAK Balance"):
 
 st.sidebar.write("Check your SNAK token balance after placing an order..")
 
+st.sidebar.markdown("""---""")
+st.sidebar.markdown("## Admin Only")
+
+# Choose Owner wallet
+owner_wallet = st.sidebar.selectbox(label='Owner Wallet: ', options=accounts)
+
+# Allow owner to check the contract balance
+if st.sidebar.button("Check Contract Balance"):
+    
+    # Load SNAK Token Address
+    contract = load_contract('menu')
+    
+    try:
+        contract_balance = contract.functions.CheckBalance().call({
+            'from': owner_wallet
+        })
+        
+        contract_balance = w3.fromWei(Decimal(contract_balance), 'ether')
+    
+        st.sidebar.markdown(f"{contract_balance} ETH")
+        
+    except ContractLogicError:
+        st.sidebar.write("Error: Are you the owner?")
+
+amount = st.sidebar.number_input("Enter Amount to Withdraw:")
+amount = w3.toWei(Decimal(amount), 'ether')
+
+# Allow owner to withdraw funds from the contract
+if st.sidebar.button("Withdraw"):
+    
+    # Load SNAK Token Address
+    contract = load_contract('menu')
+    try:
+        txn_hash = contract.functions.WithdrawToOwner(amount).transact({
+            'from': owner_wallet
+        })
+        
+        receipt = w3.eth.waitForTransactionReceipt(txn_hash)
+    
+        if receipt is not None:
+            st.write("Receipt is ready. Here it is: ")
+            st.write(dict(receipt))
+            
+    except ContractLogicError:
+        st.sidebar.write("Error: Are you the owner?")
+
+st.sidebar.markdown("""---""")
 con.close()

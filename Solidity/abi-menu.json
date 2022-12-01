@@ -64,6 +64,21 @@
 		"type": "fallback"
 	},
 	{
+		"constant": true,
+		"inputs": [],
+		"name": "CheckBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"constant": false,
 		"inputs": [
 			{
