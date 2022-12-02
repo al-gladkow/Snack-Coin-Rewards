@@ -43,7 +43,7 @@ def create_message(customer_info, food_, order_id, order_total, order_tokens):
             <p>Order: #{} <br></p>
             <p>Hi {}, <br></p>
             <p>Your order #{} is completed. <br></p>
-            <p>Total: {} eth <br></p>
+            <p>Total: {} ETH <br></p>
             <p>SNAK coins earned: {} 😃 <br></p>
             <p>Eat more, earn more!</p>
         """.format(order_id, first_name, order_id, order_total, order_tokens),
