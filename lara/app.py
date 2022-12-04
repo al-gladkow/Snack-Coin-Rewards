@@ -30,12 +30,12 @@ def load_contract(which_contract):
     # Choose which hard-coded contract to load
     # contract_address = os.getenv("SMART_CONTRACT_DEPLOYED_ADDRESS")
     if which_contract == 'menu':
-        contract_address = '0x48f012FA0cE5a4DaD0985f148f1298370BAAa10b'
+        contract_address = '0x6019Ff5B079389F3618b2B05482a9fb6fB5edD93'
         with open(Path("./Solidity/abi-menu.json")) as abi_:
             abi = json.load(abi_)
     
     elif which_contract == 'token':
-        contract_address = '0xD0a58431c0eA1483130E4F6e147c233Dea718667'
+        contract_address = '0x8C097DF189A3867Fb892e63EA0CC63BFBe4B0fFA'
         with open(Path("./Solidity/abi-token.json")) as abi_:
             abi = json.load(abi_)
 
