@@ -67,12 +67,14 @@ Once menu items are added to the cart, the total amount due in eth will display.
 Finally, the customer can check their SNAK token balance by going back to the sidebar and clicking on the "Check SNAK Balance" button. <br>
 ![SNAK Balance](Images/Screenshots/SNAK%20Balance.png)
 
-As for the owner of the deployed contract, or the restaurant, on the sidebar under the "Admin Only" section, they are able to check the balance of the contract and withdraw any eth they were paid by the customers. <br>
-![Owner Contract Blanace]()
+As for the owner of the deployed contract, or the restaurant, on the sidebar under the "Admin Only" section, they are able to check the balance of the contract and withdraw any eth they were paid by the customers. However, only the owner of the contract can withdraw funds. If anyone else tries, an error will occur. If this was an actual app, we would not include the "Admin Only" section, but would include it on an owners-only protected page. <br>
+![Owner Contract Blanace](Images/Screenshots/Check%20Owner%20Balance.png)
 
 ## Challenges, Limitations, and Future Developments
 
-Unfortunately Streamlit's limitations did not allow us to make all of the connections to the database that we would have liked to make. For example, we were not able to import environment variables such as the contract addresses, so those had to be hard-coded in the python script after deploying the contracts in Remix IDE. We were also unable to index customers based on their wallets, and instead had to use customer_id as an index. Despite many attempts, we believe this is another Streamlit limitation. If we had more time, one option to adjust this would be to shift the app to a different framework with more options, such as Django.
+Unfortunately Streamlit's limitations did not allow us to create all of the features that we would have liked to make. And because the app was written in Python, we were not able to shift the app to a different framework, such as Django, in order to add more features. 
+
+Another challenge we faced was not being able to import environment variables such as the contract addresses, so those had to be hard-coded in the Python script after deploying the contracts in Remix IDE. We were also unable to index customers based on their wallets, and instead had to use customer_id as an index. Despite many attempts, we believe this is another Streamlit limitation. If we had more time, one option to adjust this would be to shift the app to a different framework with more options.
 
 Additionally, another challenge with the app is that there is no way (using Streamlit) for multiple people to interact or order using the app at the same time. If multiple people try to use the app at the same time, the most recent order will combine with the next order that's attempting to complete. This also coincides with the issue that customers are not able to start a new order as a new customer unless the "Start New Order" button is selected. For example, if the page is refreshed, the order will continue with the last customer's order instead of starting new. Again, this seems to be a Streamlit limitation and if more time allowed, we would adjust and shift the app to a different framework that has more functionality. 
 
