@@ -2,7 +2,6 @@
 
 # Imports
 import os
-import sys
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -31,12 +30,12 @@ def load_contract(which_contract):
     # Choose which hard-coded contract to load
     # contract_address = os.getenv("SMART_CONTRACT_DEPLOYED_ADDRESS")
     if which_contract == 'menu':
-        contract_address = '0x9AaD3e122D1Fa21452DE07f600CB8CdFC6b92A82'
+        contract_address = '0xB9a63613Cf667Aa0a8513E877bbDdAD93b8133EB'
         with open(Path("./Solidity/abi-menu.json")) as abi_:
             abi = json.load(abi_)
     
     elif which_contract == 'token':
-        contract_address = '0xc773837018e11CEA3936FFDc4D0Ba8A302706ad2'
+        contract_address = '0xDE67B5D26FbcFdE4e99b3C8D6A952575726fB24A'
         with open(Path("./Solidity/abi-token.json")) as abi_:
             abi = json.load(abi_)
 
@@ -192,8 +191,8 @@ def add_to_order():
             price = menu_items[cart[x][0]][4]
             cart_total = order_total + cart[x][1] * float(price)
 
-            st.markdown("### Order Total: ")
-            st.write(round(cart_total, 4), 'ETH')
+            st.markdown("### Order Total in Ether: ")
+            st.write(cart_total)
 
             # Add most recent order_total to orders database
             query = "UPDATE Orders SET order_total = ? WHERE id = ?"
@@ -229,17 +228,15 @@ if st.button("Place Order"):
     # Show order total amount paid from selected wallet
     st.write(f"Paying {order_total} ETH from wallet: {wallet}")
 
-    with st.spinner("Please wait for transaction"):
-        # Submit transaction to contract
-        txn_hash = contract.functions.orderSnack().transact({
-            'from': wallet,
-            'value': order_total_wei
-        })
-        receipt = w3.eth.waitForTransactionReceipt(txn_hash)
+    # Submit transaction to contract
+    txn_hash = contract.functions.orderSnack().transact({
+        'from': wallet,
+        'value': order_total_wei
+    })
+    receipt = w3.eth.waitForTransactionReceipt(txn_hash)
     
     if receipt is not None:
     
-        st.write("Transaction Complete")
         st.write("Receipt is ready. Here it is: ")
         st.write(dict(receipt))
 
@@ -303,12 +300,12 @@ if st.sidebar.button("Check SNAK Balance"):
 
     # Load SNAK Token Address
     contract = load_contract('token')
-
+    
     # Show customer token balance    
     token_balance = contract.functions.balanceOf(wallet).call()
     token_balance /= 10**18
     token_balance = round(token_balance,1)
-    st.sidebar.write(token_balance, 'SNAK')
+    st.sidebar.write(token_balance)
 
 st.sidebar.write("Check your SNAK token balance after placing an order..")
 
@@ -321,8 +318,6 @@ owner_wallet = st.sidebar.selectbox(label='Owner Wallet: ', options=accounts)
 # Allow owner to check the contract balance
 if st.sidebar.button("Check Contract Balance"):
     
-    sys.tracebacklimit = 0
-    
     # Load SNAK Token Address
     contract = load_contract('menu')
     
@@ -333,11 +328,10 @@ if st.sidebar.button("Check Contract Balance"):
         
         contract_balance = w3.fromWei(Decimal(contract_balance), 'ether')
     
-        st.sidebar.write(round(contract_balance, 4), 'ETH')
+        st.sidebar.markdown(f"{contract_balance} ETH")
         
-    except ContractLogicError as e:
-        # st.sidebar.write(ContractLogicError("Are you the owner?"))
-        st.sidebar.write(e)
+    except ContractLogicError:
+        st.sidebar.write("Error: Are you the owner?")
 
 amount = st.sidebar.number_input("Enter Amount to Withdraw:")
 amount = w3.toWei(Decimal(amount), 'ether')
@@ -345,27 +339,21 @@ amount = w3.toWei(Decimal(amount), 'ether')
 # Allow owner to withdraw funds from the contract
 if st.sidebar.button("Withdraw"):
     
-    sys.tracebacklimit = 0
-    
     # Load SNAK Token Address
     contract = load_contract('menu')
-    
     try:
-        with st.spinner("Please wait for transaction"):
-            txn_hash = contract.functions.WithdrawToOwner(amount).transact({
-                'from': owner_wallet
-            })
-            
-            receipt = w3.eth.waitForTransactionReceipt(txn_hash)
+        txn_hash = contract.functions.WithdrawToOwner(amount).transact({
+            'from': owner_wallet
+        })
+        
+        receipt = w3.eth.waitForTransactionReceipt(txn_hash)
     
         if receipt is not None:
-            st.sidebar.write("Transaction Complete")
             st.write("Receipt is ready. Here it is: ")
             st.write(dict(receipt))
             
-    except ContractLogicError as e:
-        # st.sidebar.write("Error: Are you the owner?")
-        st.sidebar.write(e)
+    except ContractLogicError:
+        st.sidebar.write("Error: Are you the owner?")
 
 st.sidebar.markdown("""---""")
 con.close()

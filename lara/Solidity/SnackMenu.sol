@@ -20,13 +20,13 @@ contract SnackCoinMenu is Crowdsale, MintedCrowdsale{
 
     // Create constructor for SnackCoinMenu
     constructor(
-
+        
         uint rate,
         address payable wallet,
         SnackCoin token
     
     ) public Crowdsale(rate, address(this), token) {
-    
+        
         owner = wallet;
     
     }
@@ -48,7 +48,7 @@ contract SnackCoinMenu is Crowdsale, MintedCrowdsale{
     // Permits a function to only be called by the contract owner
     modifier onlyOwner() {
         
-        require(msg.sender == owner, "-- You are not the owner of the contract!");
+        require(msg.sender == owner, "You are not the owner of the contract!");
         _;
     
     }
@@ -56,18 +56,10 @@ contract SnackCoinMenu is Crowdsale, MintedCrowdsale{
     // Withdraws contract funds to the restaurant's wallet
     function WithdrawToOwner(uint amount) onlyOwner public{
         
-        require(address(this).balance > amount, "-- Not enough funds in contract!");
-        require(amount > 0, "-- Can't withdraw amount of 0!");
+        require(address(this).balance > amount, "Not enough funds in contract");
 
         // Send ether from the contract to the owner
         owner.transfer(amount);
-
-    }
-
-    // Allows owner to check the balance of the contract
-    function CheckBalance() public view onlyOwner returns(uint){
-
-        return address(this).balance;
 
     }
 
