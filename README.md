@@ -9,7 +9,13 @@ Welcome to Snack Coin Rewards! This Streamlit-based application reinvents the wa
 * `python == 3.10.6`
 * `web3 == 5.31.1`
 * `streamlit == 1.13.0`
-* `smtp4dev == 3.1.4`
+
+### *References*
+* OpenZeppelin: Importing implementations of standard smart contracts in order to create the deployer, menu, and SNAK token
+  * [ERC20](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/token/ERC20/ERC20.sol)
+  * [ERC20Detailed](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/token/ERC20/ERC20Detailed.sol)
+  * [ERC20Mintable](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/token/ERC20/ERC20Mintable.sol)
+* [smtp4dev](https://github.com/rnwood/smtp4dev): A dummy SMTP server to test email confirmation of orders
 
 ### *Files Navigation*
 * `Images`: Directory containing images of menu itmes and sub directory of application examples
