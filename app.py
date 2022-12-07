@@ -19,7 +19,6 @@ load_dotenv()
 
 # Create Web3 instance with Ganache URI
 w3 = Web3(Web3.HTTPProvider(os.getenv("WEB_PROVIDER_URI")))
-# st.write(w3.)
 
 # Get the acccounts from Ganache
 accounts = w3.eth.accounts
@@ -31,12 +30,12 @@ def load_contract(which_contract):
     # Choose which hard-coded contract to load
     # contract_address = os.getenv("SMART_CONTRACT_DEPLOYED_ADDRESS")
     if which_contract == 'menu':
-        contract_address = '0x9AaD3e122D1Fa21452DE07f600CB8CdFC6b92A82'
+        contract_address = '0x0d79855358f26E3a7C2f938d2252B913474b70Cf'
         with open(Path("./Solidity/abi-menu.json")) as abi_:
             abi = json.load(abi_)
     
     elif which_contract == 'token':
-        contract_address = '0xc773837018e11CEA3936FFDc4D0Ba8A302706ad2'
+        contract_address = '0x94bA44934f52f0cC4DA713dc33EDB6bA02F7Ef3D'
         with open(Path("./Solidity/abi-token.json")) as abi_:
             abi = json.load(abi_)
 
@@ -52,7 +51,9 @@ def load_contract(which_contract):
 con = sqlite3.connect('snack.db', timeout=10)
 cur = con.cursor()
 
-st.markdown("# Snack Menu")
+st.set_page_config(page_title="SnackCoin Rewards")
+
+st.markdown("# SnackCoin Rewards")
 st.markdown("""---""")
 st.text("\n")
 st.text("\n")
@@ -129,7 +130,7 @@ st.markdown("""---""")
 st.markdown("## Order Food")
 st.text("\n")
 
-st.text("Please click Start an Order and then begin adding items to your cart.")
+st.text("Please start an order before adding items to your cart.")
 
 cart = dict()
 
